@@ -1,0 +1,219 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design system for Blocos Feministas - Vibrant carnival feminist colors */
+
+@layer base {
+  :root {
+    /* Base colors */
+    --background: 340 15% 97%;
+    --foreground: 320 25% 15%;
+
+    /* Card colors */
+    --card: 340 25% 98%;
+    --card-foreground: 320 25% 15%;
+
+    /* Popover colors */
+    --popover: 340 25% 98%;
+    --popover-foreground: 320 25% 15%;
+
+    /* Primary - Vibrant magenta */
+    --primary: 320 85% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 320 85% 70%;
+
+    /* Secondary - Soft purple */
+    --secondary: 280 60% 85%;
+    --secondary-foreground: 280 80% 25%;
+
+    /* Muted colors */
+    --muted: 320 20% 92%;
+    --muted-foreground: 320 15% 45%;
+
+    /* Accent - Golden yellow */
+    --accent: 45 95% 70%;
+    --accent-foreground: 45 15% 25%;
+
+    /* Carnival colors */
+    --carnival-purple: 285 85% 65%;
+    --carnival-pink: 340 85% 70%;
+    --carnival-gold: 45 95% 65%;
+    --carnival-orange: 25 95% 65%;
+
+    /* Status colors */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 120 85% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* UI elements */
+    --border: 320 25% 88%;
+    --input: 320 25% 92%;
+    --ring: 320 85% 55%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--carnival-purple)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--carnival-pink)), hsl(var(--accent)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--carnival-purple)), hsl(var(--accent)));
+    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--secondary) / 0.3));
+
+    /* Shadows */
+    --shadow-carnival: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-soft: 0 4px 20px -8px hsl(var(--primary) / 0.15);
+    --shadow-glow: 0 0 30px hsl(var(--primary-glow) / 0.4);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Base colors - Dark carnival theme */
+    --background: 320 25% 8%;
+    --foreground: 320 15% 92%;
+
+    /* Card colors */
+    --card: 320 25% 12%;
+    --card-foreground: 320 15% 92%;
+
+    /* Popover colors */
+    --popover: 320 25% 12%;
+    --popover-foreground: 320 15% 92%;
+
+    /* Primary - Bright magenta for dark mode */
+    --primary: 320 85% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 320 85% 75%;
+
+    /* Secondary - Deep purple */
+    --secondary: 280 60% 25%;
+    --secondary-foreground: 280 15% 85%;
+
+    /* Muted colors */
+    --muted: 320 25% 18%;
+    --muted-foreground: 320 15% 65%;
+
+    /* Accent - Warm gold */
+    --accent: 45 85% 60%;
+    --accent-foreground: 45 15% 15%;
+
+    /* Carnival colors for dark mode */
+    --carnival-purple: 285 85% 70%;
+    --carnival-pink: 340 85% 75%;
+    --carnival-gold: 45 95% 70%;
+    --carnival-orange: 25 95% 70%;
+
+    /* Status colors */
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 120 75% 50%;
+    --success-foreground: 0 0% 100%;
+
+    /* UI elements */
+    --border: 320 25% 22%;
+    --input: 320 25% 18%;
+    --ring: 320 85% 65%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Leaflet map styles */
+  .leaflet-container {
+    @apply rounded-lg overflow-hidden;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/60 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/80;
+  }
+}
+
+@layer components {
+  /* Carnival animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  .animate-carnival {
+    animation: carnival 4s ease-in-out infinite;
+  }
+
+  /* Custom gradients */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@layer utilities {
+  /* Animation keyframes */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes glow {
+    from { box-shadow: var(--shadow-soft); }
+    to { box-shadow: var(--shadow-glow); }
+  }
+
+  @keyframes carnival {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.02) rotate(0.5deg); }
+    50% { transform: scale(1) rotate(0deg); }
+    75% { transform: scale(1.02) rotate(-0.5deg); }
+  }
+}
