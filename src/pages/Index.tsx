@@ -111,7 +111,7 @@ const Index = () => {
         </Card>
 
         {/* Map Section */}
-        <section id="map-section" className="mb-12">
+        <section id="map-section" className="mb-12 pt-16 md:pt-0">
           <h2 className="text-3xl font-bold gradient-text mb-6 text-center">
             Mapa dos Blocos Feministas
           </h2>
