@@ -110,10 +110,17 @@ async function migratePhotosToCloudinary() {
         // Download or read local file
         let buffer
         if (block.foto.includes('localhost')) {
-          // Remote local URL (shouldn't happen in prod, but handle it)
-          console.log(`   ⚠️  Skipping remote local URL (cannot download): ${block.foto}`)
-          skippedCount++
-          continue
+          // Remote local URL - try downloading from Railway backend instead
+          console.log(`   🌐 Attempting to download from Railway backend...`)
+          const railwayUrl = block.foto.replace('http://localhost:4000', 'https://carnaval-feminino-mapa-atualizado-production.up.railway.app')
+          try {
+            buffer = await downloadFile(railwayUrl)
+            console.log(`   ✅ Downloaded from Railway: ${railwayUrl}`)
+          } catch (downloadErr) {
+            console.log(`   ⚠️  Could not download from Railway: ${downloadErr.message}`)
+            skippedCount++
+            continue
+          }
         } else if (block.foto.startsWith('/uploads/')) {
           // Local file path
           const filename = block.foto.replace('/uploads/', '')
