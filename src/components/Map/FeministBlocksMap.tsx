@@ -164,7 +164,7 @@ const FeministBlocksMap: React.FC<FeministBlocksMapProps> = ({
 
   return (
     <div className="w-full px-4 md:px-8">
-      <div className="relative w-full h-[300px] rounded-xl overflow-hidden shadow-carnival">
+      <div className="relative w-full h-[40vh] md:h-[60vh] rounded-xl overflow-hidden shadow-carnival">
         <div ref={mapContainer} className="w-full h-full" />
         <div className="absolute top-4 left-4 bg-card/90 backdrop-blur-sm rounded-lg p-3 shadow-soft z-10">
           <h3 className="font-semibold text-primary mb-1">Blocos Feministas</h3>
