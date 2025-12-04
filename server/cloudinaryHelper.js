@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary'
+import { Readable } from 'stream'
 
 // Configura Cloudinary com env vars (CLOUDINARY_URL ou componentes separados)
 cloudinary.config({
@@ -18,13 +19,29 @@ cloudinary.config({
  */
 export async function uploadToCloudinary(source, folder = 'carnaval-blocos', options = {}) {
   try {
-    const result = await cloudinary.uploader.upload(source, {
+    // Se for Buffer, converte para stream
+    let uploadSource = source
+    if (Buffer.isBuffer(source)) {
+      uploadSource = Readable.from(source)
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream({
       folder: folder,
       resource_type: 'auto', // detecta automaticamente imagem/video
       quality: 'auto',
       fetch_format: 'auto',
       ...options
+      }, (error, result) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(result)
+        }
+      })
+      uploadSource.pipe(uploadStream)
     })
+
     return result.secure_url // URL HTTPS pública
   } catch (error) {
     console.error('[Cloudinary] Upload error:', error)
