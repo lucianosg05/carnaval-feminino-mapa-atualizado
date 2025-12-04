@@ -12,6 +12,7 @@
     "build:dev": "node scripts/setup-prisma.js && vite build --mode development",
     "build-ci": "npm install --force && node scripts/setup-prisma.js && vite build",
     "start": "node scripts/setup-prisma.js && npx prisma generate && node server/index.js",
+    "migrate:photos:cloudinary": "node server/migratePhotosToCloudinary.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
