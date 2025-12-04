@@ -1,22 +1,43 @@
-import prisma from './prismaClient.js'
-import { uploadToCloudinary, isCloudinaryConfigured } from './cloudinaryHelper.js'
+import { execSync } from 'child_process'
+import dotenv from 'dotenv'
 import https from 'https'
 import http from 'http'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { execSync } from 'child_process'
-import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Ensure Prisma is set up for the right provider (postgresql in prod, sqlite in dev)
-try {
-  console.log('📋 Setting up Prisma provider...')
-  execSync('node scripts/setup-prisma.js && npx prisma generate', { stdio: 'inherit' })
-} catch (e) {
-  console.warn('⚠️  Could not setup Prisma (might already be configured):', e.message)
+// Ensure DATABASE_URL is set and is postgresql
+if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.includes('postgresql')) {
+  console.error('❌ DATABASE_URL not set or not postgresql. This script must run on Railway.')
+  console.error('   DATABASE_URL:', process.env.DATABASE_URL)
+  process.exit(1)
 }
+
+// Force Prisma provider to postgresql and regenerate
+try {
+  console.log('📋 Forcing Prisma provider to postgresql...')
+  const schemaPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../prisma/schema.prisma')
+  let schema = fs.readFileSync(schemaPath, 'utf-8')
+  schema = schema.replace(/provider\s*=\s*"[^"]*"/, 'provider = "postgresql"')
+  fs.writeFileSync(schemaPath, schema, 'utf-8')
+  console.log('✅ Schema updated to postgresql')
+
+  console.log('📋 Regenerating Prisma Client...')
+  execSync('npx prisma generate', { stdio: 'inherit' })
+  console.log('✅ Prisma Client regenerated')
+} catch (e) {
+  console.error('❌ Error updating Prisma:', e.message)
+  process.exit(1)
+}
+
+// Clear Prisma Client cache
+delete require.cache[require.resolve('./prismaClient.js')]
+
+// Now import Prisma
+import prisma from './prismaClient.js'
+import { uploadToCloudinary, isCloudinaryConfigured } from './cloudinaryHelper.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
