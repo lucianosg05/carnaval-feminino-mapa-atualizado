@@ -1,14 +1,33 @@
 
 {
 	"version": 2,
-	"builds": [
-		{ "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
-	],
+	"buildCommand": "npm run build",
+	"outputDirectory": "dist",
+	"env": {
+		"DATABASE_URL": "@database_url",
+		"JWT_SECRET": "@jwt_secret",
+		"SITE_ADMIN_EMAIL": "@site_admin_email"
+	},
 	"routes": [
 		{
 			"src": "/api/(.*)",
 			"dest": "https://REPLACE_WITH_YOUR_BACKEND_ORIGIN/api/$1"
 		},
-		{ "src": "/(.*)", "dest": "/index.html" }
+		{
+			"src": "/.*",
+			"dest": "/index.html",
+			"status": 200
+		}
+	],
+	"headers": [
+		{
+			"source": "/(.*)",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=3600"
+				}
+			]
+		}
 	]
 }
