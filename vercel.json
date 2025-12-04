@@ -1,31 +1,14 @@
+
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "regions": ["sfo1"],
-  "functions": {
-    "api/index.js": {
-      "runtime": "nodejs20.x",
-      "memory": 1024,
-      "timeout": 60,
-      "includeFiles": "prisma/**"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api"
-    }
-  ],
-  "env": {
-    "VITE_FIREBASE_API_KEY": "@VITE_FIREBASE_API_KEY",
-    "VITE_FIREBASE_AUTH_DOMAIN": "@VITE_FIREBASE_AUTH_DOMAIN",
-    "VITE_FIREBASE_PROJECT_ID": "@VITE_FIREBASE_PROJECT_ID",
-    "VITE_FIREBASE_STORAGE_BUCKET": "@VITE_FIREBASE_STORAGE_BUCKET",
-    "VITE_FIREBASE_MESSAGING_SENDER_ID": "@VITE_FIREBASE_MESSAGING_SENDER_ID",
-    "VITE_FIREBASE_APP_ID": "@VITE_FIREBASE_APP_ID",
-    "VITE_API_URL": "@VITE_API_URL",
-    "DATABASE_URL": "@DATABASE_URL",
-    "JWT_SECRET": "@JWT_SECRET"
-  }
+	"version": 2,
+	"builds": [
+		{ "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
+	],
+	"routes": [
+		{
+			"src": "/api/(.*)",
+			"dest": "https://REPLACE_WITH_YOUR_BACKEND_ORIGIN/api/$1"
+		},
+		{ "src": "/(.*)", "dest": "/index.html" }
+	]
 }
