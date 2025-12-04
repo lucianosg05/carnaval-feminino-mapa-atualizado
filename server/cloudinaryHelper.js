@@ -19,30 +19,43 @@ cloudinary.config({
  */
 export async function uploadToCloudinary(source, folder = 'carnaval-blocos', options = {}) {
   try {
-    // Se for Buffer, converte para stream
+    // Se for string (caminho local ou URL), use o uploader direto
+    if (typeof source === 'string') {
+      const result = await cloudinary.uploader.upload(source, {
+        folder: folder,
+        resource_type: 'auto',
+        quality: 'auto',
+        fetch_format: 'auto',
+        ...options
+      })
+      return result.secure_url
+    }
+
+    // Se for Buffer, converte para Readable stream
     let uploadSource = source
     if (Buffer.isBuffer(source)) {
       uploadSource = Readable.from(source)
     }
 
-    const result = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream({
-      folder: folder,
-      resource_type: 'auto', // detecta automaticamente imagem/video
-      quality: 'auto',
-      fetch_format: 'auto',
-      ...options
-      }, (error, result) => {
-        if (error) {
-          reject(error)
-        } else {
+    // Se for um stream legível, use upload_stream
+    if (uploadSource && typeof uploadSource.pipe === 'function') {
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream({
+          folder: folder,
+          resource_type: 'auto',
+          quality: 'auto',
+          fetch_format: 'auto',
+          ...options
+        }, (error, result) => {
+          if (error) return reject(error)
           resolve(result)
-        }
+        })
+        uploadSource.pipe(uploadStream)
       })
-      uploadSource.pipe(uploadStream)
-    })
+      return result.secure_url
+    }
 
-    return result.secure_url // URL HTTPS pública
+    throw new Error('Unsupported source type for Cloudinary upload')
   } catch (error) {
     console.error('[Cloudinary] Upload error:', error)
     throw error
