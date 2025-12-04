@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken'
 import multer from 'multer'
 import path from 'path'
 import prisma from './prismaClient.js'
+import { uploadToCloudinary, isCloudinaryConfigured } from './cloudinaryHelper.js'
 
 dotenv.config()
 
@@ -232,9 +233,20 @@ app.post('/api/blocks', authMiddleware, upload.any(), async (req, res) => {
     // Build base URL for served uploads
     const baseUrl = `${req.protocol}://${req.get('host')}`
 
-    // Handle main photo
+    // Handle main photo - use Cloudinary if configured, else fallback to local
     if (filesByField.foto && filesByField.foto[0]) {
-      data.foto = `${baseUrl}/uploads/${filesByField.foto[0].filename}`
+      if (isCloudinaryConfigured()) {
+        try {
+          const photoPath = filesByField.foto[0].path
+          data.foto = await uploadToCloudinary(photoPath, 'carnaval-blocos/fotos')
+          console.log('[Upload] Foto enviada para Cloudinary:', data.foto)
+        } catch (e) {
+          console.error('[Upload] Erro no Cloudinary, usando fallback local:', e.message)
+          data.foto = `${baseUrl}/uploads/${filesByField.foto[0].filename}`
+        }
+      } else {
+        data.foto = `${baseUrl}/uploads/${filesByField.foto[0].filename}`
+      }
     }
 
     // handle local coordinates
@@ -255,8 +267,22 @@ app.post('/api/blocks', authMiddleware, upload.any(), async (req, res) => {
     }
 
     // Prepare imagens/videos arrays from uploaded files
-    const imagensArr = filesByField.imagens ? filesByField.imagens.map(f => `${baseUrl}/uploads/${f.filename}`) : []
-    const videosArr = filesByField.videos ? filesByField.videos.map(f => `${baseUrl}/uploads/${f.filename}`) : []
+    let imagensArr = []
+    let videosArr = []
+    
+    if (filesByField.imagens && isCloudinaryConfigured()) {
+      // Upload multiple images to Cloudinary
+      imagensArr = await Promise.all(filesByField.imagens.map(f => uploadToCloudinary(f.path, 'carnaval-blocos/imagens')))
+    } else if (filesByField.imagens) {
+      imagensArr = filesByField.imagens.map(f => `${baseUrl}/uploads/${f.filename}`)
+    }
+    
+    if (filesByField.videos && isCloudinaryConfigured()) {
+      // Upload videos to Cloudinary
+      videosArr = await Promise.all(filesByField.videos.map(f => uploadToCloudinary(f.path, 'carnaval-blocos/videos')))
+    } else if (filesByField.videos) {
+      videosArr = filesByField.videos.map(f => `${baseUrl}/uploads/${f.filename}`)
+    }
 
     // Prepare block data - only include fields that exist in schema
     const blockData = {
@@ -323,7 +349,18 @@ app.put('/api/blocks/:id', authMiddleware, upload.any(), async (req, res) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`
 
     if (filesByField.foto && filesByField.foto[0]) {
-      data.foto = `${baseUrl}/uploads/${filesByField.foto[0].filename}`
+      if (isCloudinaryConfigured()) {
+        try {
+          const photoPath = filesByField.foto[0].path
+          data.foto = await uploadToCloudinary(photoPath, 'carnaval-blocos/fotos')
+          console.log('[Update] Foto enviada para Cloudinary:', data.foto)
+        } catch (e) {
+          console.error('[Update] Erro no Cloudinary, usando fallback local:', e.message)
+          data.foto = `${baseUrl}/uploads/${filesByField.foto[0].filename}`
+        }
+      } else {
+        data.foto = `${baseUrl}/uploads/${filesByField.foto[0].filename}`
+      }
     }
     
     const localLat = data.localLat ? parseFloat(data.localLat) : undefined
@@ -343,8 +380,20 @@ app.put('/api/blocks/:id', authMiddleware, upload.any(), async (req, res) => {
     }
 
     // Prepare imagens/videos arrays from uploaded files (only if provided)
-    const imagensArr = filesByField.imagens ? filesByField.imagens.map(f => `${baseUrl}/uploads/${f.filename}`) : undefined
-    const videosArr = filesByField.videos ? filesByField.videos.map(f => `${baseUrl}/uploads/${f.filename}`) : undefined
+    let imagensArr = undefined
+    let videosArr = undefined
+    
+    if (filesByField.imagens && isCloudinaryConfigured()) {
+      imagensArr = await Promise.all(filesByField.imagens.map(f => uploadToCloudinary(f.path, 'carnaval-blocos/imagens')))
+    } else if (filesByField.imagens) {
+      imagensArr = filesByField.imagens.map(f => `${baseUrl}/uploads/${f.filename}`)
+    }
+    
+    if (filesByField.videos && isCloudinaryConfigured()) {
+      videosArr = await Promise.all(filesByField.videos.map(f => uploadToCloudinary(f.path, 'carnaval-blocos/videos')))
+    } else if (filesByField.videos) {
+      videosArr = filesByField.videos.map(f => `${baseUrl}/uploads/${f.filename}`)
+    }
 
     // Prepare block data - only include fields that exist in schema
     const blockData = {
@@ -487,7 +536,18 @@ app.post('/api/events', authMiddleware, upload.any(), async (req, res) => {
     }
     
     if (filesByField.foto && filesByField.foto[0]) {
-      data.foto = `/uploads/${filesByField.foto[0].filename}`
+      if (isCloudinaryConfigured()) {
+        try {
+          const photoPath = filesByField.foto[0].path
+          data.foto = await uploadToCloudinary(photoPath, 'carnaval-eventos/fotos')
+          console.log('[Event] Foto de evento enviada para Cloudinary:', data.foto)
+        } catch (e) {
+          console.error('[Event] Erro no Cloudinary para evento, usando fallback:', e.message)
+          data.foto = `/uploads/${filesByField.foto[0].filename}`
+        }
+      } else {
+        data.foto = `/uploads/${filesByField.foto[0].filename}`
+      }
     }
     // normalize optional fields
     const tipo = data.tipo || null
@@ -546,7 +606,20 @@ app.put('/api/events/:id', authMiddleware, upload.any(), async (req, res) => {
       })
     }
     
-    if (filesByField.foto && filesByField.foto[0]) data.foto = `/uploads/${filesByField.foto[0].filename}`
+    if (filesByField.foto && filesByField.foto[0]) {
+      if (isCloudinaryConfigured()) {
+        try {
+          const photoPath = filesByField.foto[0].path
+          data.foto = await uploadToCloudinary(photoPath, 'carnaval-eventos/fotos')
+          console.log('[Event Update] Foto enviada para Cloudinary:', data.foto)
+        } catch (e) {
+          console.error('[Event Update] Erro no Cloudinary, usando fallback:', e.message)
+          data.foto = `/uploads/${filesByField.foto[0].filename}`
+        }
+      } else {
+        data.foto = `/uploads/${filesByField.foto[0].filename}`
+      }
+    }
     const tipo = data.tipo || undefined
     const horario = data.horario || undefined
 
