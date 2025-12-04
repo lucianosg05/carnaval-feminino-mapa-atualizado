@@ -5,6 +5,18 @@ import http from 'http'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { execSync } from 'child_process'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+// Ensure Prisma is set up for the right provider (postgresql in prod, sqlite in dev)
+try {
+  console.log('📋 Setting up Prisma provider...')
+  execSync('node scripts/setup-prisma.js && npx prisma generate', { stdio: 'inherit' })
+} catch (e) {
+  console.warn('⚠️  Could not setup Prisma (might already be configured):', e.message)
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
