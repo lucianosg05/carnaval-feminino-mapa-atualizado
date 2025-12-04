@@ -80,7 +80,7 @@ const Header: React.FC = () => {
           
         </div>
         
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation: icons-only to save space */}
         <nav className="md:hidden flex justify-center gap-2 mt-4 pt-4 border-t border-border/50">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -90,15 +90,18 @@ const Header: React.FC = () => {
                 variant={isActive ? "carnival" : "ghost"}
                 size="sm"
                 onClick={() => navigate(item.path)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-0 px-2 py-2"
               >
-                <item.icon className="w-4 h-4" />
-                {item.label}
+                <item.icon className="w-5 h-5" />
+                <span className="sr-only">{item.label}</span>
               </Button>
             );
           })}
-          <Button onClick={() => user ? navigate('/admin') : navigate('/login')} size="sm" variant="outline">
-            Admin
+          <Button onClick={() => user ? navigate('/admin') : navigate('/login')} size="sm" variant="outline" className="px-2 py-2">
+            <span className="sr-only">Admin</span>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+              <path d="M12 12a5 5 0 100-10 5 5 0 000 10zM4 20a8 8 0 0116 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </Button>
           {user && (
             <Button 
@@ -106,10 +109,10 @@ const Header: React.FC = () => {
               size="sm" 
               variant="ghost"
               disabled={isLoggingOut}
-              className="flex items-center gap-2 text-red-600 hover:text-red-700"
+              className="px-2 py-2 text-red-600 hover:text-red-700"
             >
-              <LogOut className="w-4 h-4" />
-              Sair
+              <LogOut className="w-5 h-5" />
+              <span className="sr-only">Sair</span>
             </Button>
           )}
         </nav>
