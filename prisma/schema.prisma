@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Block {
+  id                String   @id @default(uuid())
+  nome              String
+  descricao         String?
+  contato           String?
+  foto              String?
+  localLat          Float?
+  localLng          Float?
+  cidade            String?
+  estado            String?
+  endereco          String?
+  vertenteFeminista String?
+  formacao          String?
+  atividades        String?  // Activities/what the block does
+  dias              String?  // Days when block performs
+  imagens           String?  // JSON string with array of image URLs
+  videos            String?  // JSON string with array of video URLs
+  redesSociais      String?  // JSON string with social links
+  ownerId           String?  // Owner id or special value 'site' for site-owned seeds
+  eventos           Event[]  @relation("BlockEvents")
+}
+
+model Event {
+  id        String   @id @default(uuid())
+  nome      String
+  data      DateTime
+  descricao String?
+  foto      String?
+  blocoId   String
+  local     String?
+  cidade    String?
+  estado    String?
+  tipo      String?  // e.g. Ensaio, Oficina, Desfile, Show
+  horario   String?  // stored as HH:mm string
+  bloco     Block    @relation(fields: [blocoId], references: [id], name: "BlockEvents")
+}
