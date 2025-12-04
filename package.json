@@ -7,8 +7,9 @@
     "dev": "concurrently \"vite\" \"nodemon --watch server --exec node server/index.js\"",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "setup-prisma": "node scripts/setup-prisma.js",
+    "build": "node scripts/setup-prisma.js && vite build",
+    "build:dev": "node scripts/setup-prisma.js && vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
   },
