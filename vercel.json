@@ -3,31 +3,12 @@
 	"version": 2,
 	"buildCommand": "npm run build",
 	"outputDirectory": "dist",
-	"env": {
-		"DATABASE_URL": "@database_url",
-		"JWT_SECRET": "@jwt_secret",
-		"SITE_ADMIN_EMAIL": "@site_admin_email"
-	},
-	"routes": [
-		{
-			"src": "/api/(.*)",
-			"dest": "https://REPLACE_WITH_YOUR_BACKEND_ORIGIN/api/$1"
-		},
-		{
-			"src": "/.*",
-			"dest": "/index.html",
-			"status": 200
-		}
-	],
-	"headers": [
+	"cleanUrls": true,
+	"trailingSlash": false,
+	"rewrites": [
 		{
 			"source": "/(.*)",
-			"headers": [
-				{
-					"key": "Cache-Control",
-					"value": "public, max-age=3600"
-				}
-			]
+			"destination": "/index.html"
 		}
 	]
 }
