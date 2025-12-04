@@ -11,8 +11,80 @@ import prisma from './prismaClient.js'
 dotenv.config()
 
 const app = express()
-// Allow dev frontend origins (Vite) and enable credentials. In production, restrict this.
-app.use(cors({ origin: [ 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:8081', 'http://26.236.240.201:8080', 'http://26.236.240.201:8081', 'http://26.236.240.201:8082', 'http://26.236.240.201:8083', 'http://192.168.15.67:8080', 'http://192.168.15.67:8081' ], credentials: true }))
+// Configure CORS: default dev origins + any extra origins from env var `ALLOWED_ORIGINS`.
+// To allow the Vercel frontend, set `ALLOWED_ORIGINS` to a comma-separated list
+// (e.g. "https://meu-site.vercel.app,https://meu-outro.vercel.app").
+const defaultOrigins = [
+  'http://localhost:5173',
+  'http://localhost:8080',
+  'http://localhost:8081',
+  'http://26.236.240.201:8080',
+  'http://26.236.240.201:8081',
+  'http://26.236.240.201:8082',
+  'http://26.236.240.201:8083',
+  'http://192.168.15.67:8080',
+  'http://192.168.15.67:8081'
+]
+
+const envOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean)
+
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]))
+
+// ALLOW_ANY_VERCEL enabled by default for temporary debug; disable in production
+const allowAnyVercel = (process.env.ALLOW_ANY_VERCEL !== 'false')
+
+console.log(`[CORS] Allowed origins: ${allowedOrigins.join(', ')}`)
+console.log(`[CORS] ALLOW_ANY_VERCEL: ${allowAnyVercel}`)
+
+// Robust CORS: set explicit headers so preflight (OPTIONS) always returns
+// the required Access-Control-* headers for allowed origins.
+app.use((req, res, next) => {
+  const origin = req.get('origin')
+  const method = req.method
+  
+  // Allow requests with no origin (server-to-server, curl)
+  if (!origin) {
+    if (method === 'OPTIONS') {
+      console.log(`[CORS] ${method} (no origin): allowed`)
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+      res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type,Accept')
+      return res.sendStatus(204)
+    }
+    return next()
+  }
+
+  const isAllowed = allowedOrigins.includes(origin) || (allowAnyVercel && origin.includes('.vercel.app'))
+  
+  if (method === 'OPTIONS') {
+    console.log(`[CORS] OPTIONS from ${origin}: ${isAllowed ? 'ALLOWED' : 'BLOCKED'}`)
+  }
+
+  if (isAllowed) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD')
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type,Accept,X-Requested-With')
+    res.setHeader('Access-Control-Max-Age', '86400')
+  }
+
+  if (method === 'OPTIONS') {
+    return res.sendStatus(isAllowed ? 204 : 403)
+  }
+
+  next()
+})
+
+// Keep the cors middleware as a fallback for normal requests
+app.use(cors({ origin: (origin, cb) => {
+  if (!origin || allowedOrigins.includes(origin) || (allowAnyVercel && origin.includes('.vercel.app'))) {
+    cb(null, true)
+  } else {
+    cb(new Error('Not allowed by CORS'), false)
+  }
+}, credentials: true }))
 app.options('*', cors())
 app.use(express.json())
 app.use(cookieParser())
