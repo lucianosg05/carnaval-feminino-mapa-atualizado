@@ -58,7 +58,7 @@ const BlockCard: React.FC<BlockCardProps> = ({
         <img 
           src={block.foto || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23f0e6ff"/%3E%3Ctext x="50%" y="50%" font-size="24" fill="%236b5b95" text-anchor="middle" dominant-baseline="middle"%3ESem foto%3C/text%3E%3C/svg%3E'} 
           alt={block.nome}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-smooth"
+          className="w-full h-40 sm:h-44 md:h-48 object-cover group-hover:scale-105 transition-smooth"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         <Badge 
@@ -77,7 +77,7 @@ const BlockCard: React.FC<BlockCardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4 flex-1 flex flex-col">
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="truncate">{block.cidade}</span>
@@ -110,12 +110,12 @@ const BlockCard: React.FC<BlockCardProps> = ({
           )}
         </div>
         
-        <div className="flex gap-2 pt-2 mt-auto">
+        <div className="flex flex-col sm:flex-row gap-2 pt-2 mt-auto">
           <Button 
             variant="carnival" 
             size="sm" 
             onClick={() => onViewProfile(block.id)}
-            className="flex-1"
+            className="w-full sm:flex-1"
           >
             Ver Perfil
           </Button>
@@ -123,7 +123,7 @@ const BlockCard: React.FC<BlockCardProps> = ({
             variant="outline" 
             size="sm" 
             onClick={() => onSelectOnMap(block.id)}
-            className="px-3"
+            className="w-full sm:w-auto px-3"
           >
             <MapPin className="w-4 h-4" />
           </Button>

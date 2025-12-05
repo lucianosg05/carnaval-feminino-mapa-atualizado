@@ -82,7 +82,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-12">
         {/* Search and Filters */}
         <Card className="mb-8 bg-gradient-card">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -134,7 +134,7 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr items-stretch">
             {filteredBlocks.map((block: any) => (
               <BlockCard
                 key={block.id}
