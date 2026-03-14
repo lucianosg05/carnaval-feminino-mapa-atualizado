@@ -14,7 +14,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@gres_kifogo" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.7939,
     localLng: -45.4158
   },
@@ -29,7 +28,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@soldavilaamelia" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.7939,
     localLng: -45.4158
   },
@@ -44,7 +42,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@blocofeminista", facebook: "Bloco Feminista" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.5505,
     localLng: -46.6333
   },
@@ -59,7 +56,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@blocosofiadavida" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.1896,
     localLng: -45.8852
   },
@@ -74,7 +70,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: ["@eva_figueiredo_", "@filhasdeevafloripa"] }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -27.5949,
     localLng: -48.5480
   },
@@ -89,7 +84,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@bloco.mulheresbrilhantes" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -22.9068,
     localLng: -43.1729
   },
@@ -104,7 +98,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@naomexecomigoque", facebook: "Não Mexe Comigo Que Eu Não Ando Só", youtube: "@naomexecomigo" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -30.0326,
     localLng: -51.2302
   },
@@ -119,7 +112,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@calcinhasbelicas" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -22.9068,
     localLng: -43.1729
   },
@@ -134,7 +126,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@baquemulherrj" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -22.9068,
     localLng: -43.1729
   },
@@ -149,7 +140,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@blocosiriricando" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.5505,
     localLng: -46.6333
   },
@@ -164,7 +154,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@blocosaiadechita" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.5505,
     localLng: -46.6333
   },
@@ -179,7 +168,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@blocodramasdesapatao" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.5505,
     localLng: -46.6333
   },
@@ -194,7 +182,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@bloquetevinhedo" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.0460,
     localLng: -46.9971
   },
@@ -209,7 +196,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: ["@ccidalves", "@bloconaoenao"] }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -16.6869,
     localLng: -49.2648
   },
@@ -224,7 +210,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@vapor.de.virilha" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -15.7942,
     localLng: -47.8822
   },
@@ -239,7 +224,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@elapodeelavai" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -25.4284,
     localLng: -49.2733
   },
@@ -254,7 +238,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@movimentoFBV", youtube: "@MovimentoBaqueMulherFBV" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -8.0476,
     localLng: -34.8770
   },
@@ -269,7 +252,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@sambdeirasderoda", youtube: "@SambadeirasdeRoda" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -15.7942,
     localLng: -47.8822
   },
@@ -284,7 +266,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@bloco_mariaSapatao" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.4615,
     localLng: -46.4873
   },
@@ -299,7 +280,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@sagradaprofanabh" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -19.9191,
     localLng: -43.9386
   },
@@ -314,7 +294,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@maluvidas" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -15.7942,
     localLng: -47.8822
   },
@@ -329,7 +308,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@sopresuasferas" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -30.0326,
     localLng: -51.2302
   },
@@ -344,7 +322,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@naoenao_", linkedin: "@naoenao_" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -22.9068,
     localLng: -43.1729
   },
@@ -359,7 +336,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@asobscenicas", tiktok: "@asobscenicas" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.5505,
     localLng: -46.6333
   },
@@ -374,7 +350,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@iluoba" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.5505,
     localLng: -46.6333
   },
@@ -389,7 +364,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: ["@amandamenconi", "@naclara_santos"] }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.2988,
     localLng: -45.3267
   },
@@ -404,7 +378,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@asbatucas" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -30.0326,
     localLng: -51.2302
   },
@@ -419,7 +392,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@nuvucovuco" }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -23.5505,
     localLng: -46.6333
   },
@@ -434,7 +406,6 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: ["@rcarvalhorodrigues", "@blocomulheresrodadas"] }),
     foto: "",
     imagens: JSON.stringify([]),
-    videos: JSON.stringify([]),
     localLat: -22.9068,
     localLng: -43.1729
   }
