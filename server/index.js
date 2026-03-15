@@ -34,11 +34,12 @@ const envOrigins = (process.env.ALLOWED_ORIGINS || '')
 
 const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]))
 
-// ALLOW_ANY_VERCEL enabled by default for temporary debug; disable in production
+// ALLOW_ANY_VERCEL enabled by default for temp debug; disable in production by setting to 'false'
 const allowAnyVercel = (process.env.ALLOW_ANY_VERCEL !== 'false')
 
 console.log(`[CORS] Allowed origins: ${allowedOrigins.join(', ')}`)
 console.log(`[CORS] ALLOW_ANY_VERCEL: ${allowAnyVercel}`)
+console.log(`[CORS] Will accept ANY .vercel.app domain: ${allowAnyVercel}`)
 
 // Robust CORS: set explicit headers so preflight (OPTIONS) always returns
 // the required Access-Control-* headers for allowed origins.
@@ -79,13 +80,20 @@ app.use((req, res, next) => {
 })
 
 // Keep the cors middleware as a fallback for normal requests
-app.use(cors({ origin: (origin, cb) => {
-  if (!origin || allowedOrigins.includes(origin) || (allowAnyVercel && origin.includes('.vercel.app'))) {
-    cb(null, true)
-  } else {
-    cb(new Error('Not allowed by CORS'), false)
-  }
-}, credentials: true }))
+app.use(cors({ 
+  origin: (origin, cb) => {
+    const allowed = !origin || allowedOrigins.includes(origin) || (allowAnyVercel && origin?.includes('.vercel.app'))
+    if (allowed) {
+      cb(null, true)
+    } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`)
+      cb(new Error('Not allowed by CORS'), false)
+    }
+  }, 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
+}))
 app.options('*', cors())
 app.use(express.json())
 app.use(cookieParser())
@@ -142,6 +150,26 @@ async function authMiddleware(req, res, next) {
     }
   }
 }
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok',
+    allowAnyVercel,
+    origin: req.get('origin'),
+    message: 'Server is running'
+  })
+})
+
+// CORS test endpoint
+app.get('/api/cors-test', (req, res) => {
+  res.json({ 
+    status: 'CORS works!',
+    origin: req.get('origin'),
+    allowedOrigins,
+    acceptVercelApps: allowAnyVercel
+  })
+})
 
 // Auth routes
 app.post('/api/auth/register', async (req, res) => {
