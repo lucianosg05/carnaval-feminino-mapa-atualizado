@@ -1,4 +1,23 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api'
+function getApiBase(): string {
+  // Use environment variable if set
+  if (import.meta.env.VITE_API_BASE) {
+    return import.meta.env.VITE_API_BASE
+  }
+  
+  // In browser, determine based on hostname
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:4000/api'
+    }
+    // For any other hostname (Vercel, staging, etc), use Render backend
+    return 'https://carnaval-feminino-mapa-atualizado.onrender.com/api'
+  }
+  
+  // Fallback (shouldn't reach here in browser)
+  return 'https://carnaval-feminino-mapa-atualizado.onrender.com/api'
+}
+
+const API_BASE = getApiBase()
 
 export function setToken(token: string | null) {
   if (token) localStorage.setItem('token', token)
