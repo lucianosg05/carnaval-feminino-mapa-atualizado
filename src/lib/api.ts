@@ -9,12 +9,12 @@ function getApiBase(): string {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:4000/api'
     }
-    // For any other hostname (Vercel, staging, etc), use Render backend
-    return 'https://carnaval-feminino-mapa-atualizado.onrender.com/api'
+    // For Vercel/production, use Railway backend
+    return 'https://carnaval-feminino-mapa-atualizado-production-de97.up.railway.app/api'
   }
   
   // Fallback (shouldn't reach here in browser)
-  return 'https://carnaval-feminino-mapa-atualizado.onrender.com/api'
+  return 'https://carnaval-feminino-mapa-atualizado-production-de97.up.railway.app/api'
 }
 
 const API_BASE = getApiBase()
