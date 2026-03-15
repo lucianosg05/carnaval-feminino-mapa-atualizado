@@ -14,6 +14,9 @@ async function main() {
   const dbUrl = process.env.DATABASE_URL || '';
   const isPostgres = dbUrl.startsWith('postgres') || dbUrl.startsWith('postgresql:');
 
+  console.log(`[SETUP] DATABASE_URL configured: ${isPostgres ? 'PostgreSQL (Neon)' : 'SQLite'}`);
+  console.log(`[SETUP] Database URL starts with: ${dbUrl.substring(0, 30)}...`);
+
   if (isPostgres) {
     setProvider('postgresql');
   } else {
