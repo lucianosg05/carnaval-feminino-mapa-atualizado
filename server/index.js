@@ -41,18 +41,21 @@ app.use(cors({
 // Explicit preflight handling
 app.options('*', cors())
 
-// Additional CORS headers middleware
+// Additional CORS headers middleware - MUST be before all routes
 app.use((req, res, next) => {
   const origin = req.get('origin')
   if (origin) {
     res.setHeader('Access-Control-Allow-Origin', origin)
     res.setHeader('Access-Control-Allow-Credentials', 'true')
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*')
   }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
+  res.setHeader('Access-Control-Max-Age', '86400')
+  
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
-    res.setHeader('Access-Control-Max-Age', '86400')
-    return res.sendStatus(204)
+    return res.status(204).end()
   }
   next()
 })
@@ -695,6 +698,34 @@ app.delete('/api/events/:id', authMiddleware, async (req, res) => {
   } catch (e) {
     res.status(404).json({ error: 'Not found' })
   }
+})
+
+// Error handling middleware - MUST be last
+app.use((err, req, res, next) => {
+  // Ensure CORS headers are always sent
+  const origin = req.get('origin')
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
+  
+  console.error('[ERROR] Unhandled error:', err)
+  res.status(500).json({ error: 'Internal server error', message: err.message })
+})
+
+// 404 handler
+app.use((req, res) => {
+  const origin = req.get('origin')
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+  }
+  res.status(404).json({ error: 'Not found', path: req.path })
 })
 
 // Serve uploads
