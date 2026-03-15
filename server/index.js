@@ -28,49 +28,34 @@ const defaultOrigins = [
 ]
 
 // ====== CORS CONFIGURATION ======
-// CRITICAL: Accept any Vercel deployment automatically
-const allowAnyVercel = true  // Force accept all .vercel.app
+console.log(`[CORS] Configuring CORS for all origins`)
 
-console.log(`[CORS] ALLOW_ANY_VERCEL: true (FORCED for production)`)
-console.log(`[CORS] Will accept ANY origin with .vercel.app domain`)
-
-// Simple CORS: Accept everything
-app.use((req, res, next) => {
-  const origin = req.get('origin')
-  
-  // Accept vercel apps always
-  if (!origin || origin.includes('.vercel.app') || origin.includes('localhost')) {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*')
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
-    res.setHeader('Access-Control-Max-Age', '86400')
-    
-    if (req.method === 'OPTIONS') {
-      console.log(`[CORS] ✓ Allowed ${req.method} from ${origin}`)
-      return res.sendStatus(204)
-    }
-  }
-  
-  next()
-})
-
-// Keep cors middleware as extra fallback
-app.use(cors({ 
-  origin: function (origin, callback) {
-    // Accept all vercel apps and localhost
-    if (!origin || origin.includes('.vercel.app') || origin.includes('localhost')) {
-      callback(null, true)
-    } else {
-      console.warn(`[CORS] ✗ Blocked ${origin}`)
-      callback(null, true)  // Allow anyway for production
-    }
-  },
+// Accept all origins (for development and production)
+app.use(cors({
+  origin: true,  // Accept all origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
 }))
+
+// Explicit preflight handling
 app.options('*', cors())
+
+// Additional CORS headers middleware
+app.use((req, res, next) => {
+  const origin = req.get('origin')
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+  }
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
+    res.setHeader('Access-Control-Max-Age', '86400')
+    return res.sendStatus(204)
+  }
+  next()
+})
 app.use(express.json())
 app.use(cookieParser())
 
@@ -131,8 +116,9 @@ async function authMiddleware(req, res, next) {
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok',
-    allowAnyVercel,
-    origin: req.get('origin'),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime(),
     message: 'Server is running'
   })
 })
@@ -142,9 +128,27 @@ app.get('/api/cors-test', (req, res) => {
   res.json({ 
     status: 'CORS works!',
     origin: req.get('origin'),
-    allowedOrigins,
-    acceptVercelApps: allowAnyVercel
+    message: 'CORS headers are being sent'
   })
+})
+
+// Database test endpoint
+app.get('/api/db-test', async (req, res) => {
+  try {
+    const count = await prisma.block.count()
+    res.json({ 
+      status: 'Database connected',
+      blocksInDatabase: count,
+      message: 'Neon connection successful'
+    })
+  } catch (error) {
+    console.error('[DB] Connection error:', error.message)
+    res.status(500).json({ 
+      status: 'Database error',
+      error: error.message,
+      message: 'Failed to connect to Neon'
+    })
+  }
 })
 
 // Auth routes
@@ -192,8 +196,20 @@ app.get('/api/blocks', async (req, res) => {
     console.log(`[API] GET /api/blocks - Retornando ${blocks.length} blocos`)
     res.json(blocks)
   } catch (error) {
-    console.error('[API] GET /api/blocks - Erro:', error)
-    res.status(500).json({ error: 'Erro ao buscar blocos' })
+    console.error('[API] GET /api/blocks - Erro completo:', error.message)
+    
+    // Check if it's a schema mismatch error
+    if (error.code === 'P2022' && error.meta?.column === 'Block.videoUrl') {
+      console.error('[API] ❌ SCHEMA MISMATCH: Database has outdated schema')
+      console.error('[API] Please run: npx prisma migrate deploy')
+      return res.status(503).json({ 
+        error: 'Database schema mismatch - migrations needed',
+        details: error.message,
+        code: error.code
+      })
+    }
+    
+    res.status(500).json({ error: 'Erro ao buscar blocos', details: error.message })
   }
 })
 
@@ -685,6 +701,25 @@ app.delete('/api/events/:id', authMiddleware, async (req, res) => {
 app.use('/uploads', express.static(path.join(process.cwd(), 'server', 'uploads')))
 
 const port = process.env.PORT || 4000
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`)
+
+// Error handling for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('[ERROR] Uncaught Exception:', error)
+  process.exit(1)
 })
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[ERROR] Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
+// Start server with error handling
+try {
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`[SERVER] ✅ Running on port ${port}`)
+    console.log(`[SERVER] NODE_ENV: ${process.env.NODE_ENV || 'development'}`)
+    console.log(`[SERVER] Database: ${process.env.DATABASE_URL ? 'PostgreSQL (Neon)' : 'NOT SET'}`)
+  })
+} catch (error) {
+  console.error('[SERVER] Failed to start:', error)
+  process.exit(1)
+}
