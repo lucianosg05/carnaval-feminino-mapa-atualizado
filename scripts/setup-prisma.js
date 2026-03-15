@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 
 const schemaPath = path.join(process.cwd(), 'prisma', 'schema.prisma');
 
@@ -10,12 +11,29 @@ function setProvider(provider) {
   console.log(`✅ prisma/schema.prisma updated to provider=${provider}`);
 }
 
+function clearPrismaCache() {
+  const prismaDir = path.join(process.cwd(), '.prisma');
+  const prismaClientDir = path.join(process.cwd(), 'node_modules', '.prisma');
+  
+  try {
+    if (fs.existsSync(prismaDir)) {
+      fs.rmSync(prismaDir, { recursive: true, force: true });
+      console.log('[CACHE] Cleared .prisma directory');
+    }
+  } catch (e) {
+    console.warn('[CACHE] Could not clear .prisma:', e.message);
+  }
+}
+
 async function main() {
   const dbUrl = process.env.DATABASE_URL || '';
   const isPostgres = dbUrl.startsWith('postgres') || dbUrl.startsWith('postgresql:');
 
   console.log(`[SETUP] DATABASE_URL configured: ${isPostgres ? 'PostgreSQL (Neon)' : 'SQLite'}`);
   console.log(`[SETUP] Database URL starts with: ${dbUrl.substring(0, 30)}...`);
+
+  // Clear any cached Prisma files
+  clearPrismaCache();
 
   if (isPostgres) {
     setProvider('postgresql');
@@ -25,6 +43,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error(err);
+  console.error('[SETUP] Error:', err);
   process.exit(1);
 });
