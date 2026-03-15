@@ -1,20 +1,22 @@
 function getApiBase(): string {
-  // Use environment variable if set
-  if (import.meta.env.VITE_API_BASE) {
-    return import.meta.env.VITE_API_BASE
+  // For localhost, use local server
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:4000/api'
   }
   
-  // In browser, determine based on hostname
-  if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return 'http://localhost:4000/api'
-    }
-    // For Vercel/production, use Railway backend
-    return 'https://carnaval-feminino-mapa-atualizado-production-de97.up.railway.app/api'
+  // For production, use Railway backend with explicit https://
+  const railwayUrl = 'https://carnaval-feminino-mapa-atualizado-production-de97.up.railway.app/api'
+  
+  // Try to use VITE_API_BASE if available and valid
+  const envBase = import.meta.env.VITE_API_BASE
+  if (envBase && envBase.startsWith('http')) {
+    console.log('[API] Using VITE_API_BASE:', envBase)
+    return envBase
   }
   
-  // Fallback (shouldn't reach here in browser)
-  return 'https://carnaval-feminino-mapa-atualizado-production-de97.up.railway.app/api'
+  // Fallback to Railway with debug log
+  console.log('[API] Using Railway backend:', railwayUrl)
+  return railwayUrl
 }
 
 const API_BASE = getApiBase()
@@ -32,7 +34,9 @@ async function request(path: string, options: RequestInit = {}) {
   const token = getToken()
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
-  const res = await fetch(`${API_BASE}${path}`, { headers, credentials: 'include', ...options })
+  const fullUrl = `${API_BASE}${path}`
+  console.log('[API] Full request URL:', fullUrl)
+  const res = await fetch(fullUrl, { headers, credentials: 'include', ...options })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     throw new Error(body.error || res.statusText)
