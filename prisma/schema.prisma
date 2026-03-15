@@ -15,7 +15,7 @@ model User {
 }
 
 model Block {
-  id                String   @id @default(uuid())
+  id                String  @id @default(uuid())
   nome              String
   descricao         String?
   contato           String?
@@ -27,13 +27,13 @@ model Block {
   endereco          String?
   vertenteFeminista String?
   formacao          String?
-  atividades        String?  // Activities/what the block does
-  dias              String?  // Days when block performs
-  imagens           String?  // JSON string with array of image URLs
-  videos            String?  // JSON string with array of video URLs
-  redesSociais      String?  // JSON string with social links
-  ownerId           String?  // Owner id or special value 'site' for site-owned seeds
-  eventos           Event[]  @relation("BlockEvents")
+  atividades        String?
+  dias              String?
+  imagens           String?
+  redesSociais      String?
+  ownerId           String?
+  videos            String?
+  eventos           Event[] @relation("BlockEvents")
 }
 
 model Event {
@@ -46,7 +46,7 @@ model Event {
   local     String?
   cidade    String?
   estado    String?
-  tipo      String?  // e.g. Ensaio, Oficina, Desfile, Show
-  horario   String?  // stored as HH:mm string
-  bloco     Block    @relation(fields: [blocoId], references: [id], name: "BlockEvents")
+  tipo      String?
+  horario   String?
+  bloco     Block    @relation("BlockEvents", fields: [blocoId], references: [id])
 }

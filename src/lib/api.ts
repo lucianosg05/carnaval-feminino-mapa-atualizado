@@ -29,9 +29,16 @@ export const auth = {
 
 export const blocksApi = {
   list: async () => {
-    const data = await request('/blocks')
-    if (Array.isArray(data)) return data.map(normalizeBlock)
-    return data
+    try {
+      console.log('[API] Fetching blocks from:', API_BASE)
+      const data = await request('/blocks')
+      console.log('[API] Blocos recebidos:', data?.length || 0)
+      if (Array.isArray(data)) return data.map(normalizeBlock)
+      return data
+    } catch (error) {
+      console.error('[API] Erro ao buscar blocos:', error)
+      throw error
+    }
   },
   // Authenticated admin list: returns only blocks the current user can manage
   adminList: async () => {

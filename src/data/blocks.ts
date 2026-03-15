@@ -14,12 +14,12 @@ export interface Block {
   proximosEventos?: Array<any>;
   imagens?: string[];
   videos?: string[];
-  redesSociais?: {
-    instagram?: string;
-    facebook?: string;
-    site?: string;
-    tiktok?: string;
-  } | null;
+  redesSociais?: any | null;
+  cache?: string;
+  historia?: string;
+  estilo?: string;
+  ownerId?: string;
+  eventos?: Array<any>;
 }
 
 // helper: previously mocked data was here; now data comes from the API via react-query

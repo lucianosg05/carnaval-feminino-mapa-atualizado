@@ -183,8 +183,14 @@ app.post('/api/auth/logout', (req, res) => {
 
 // Blocks CRUD
 app.get('/api/blocks', async (req, res) => {
-  const blocks = await prisma.block.findMany({ include: { eventos: true } })
-  res.json(blocks)
+  try {
+    const blocks = await prisma.block.findMany({ include: { eventos: true } })
+    console.log(`[API] GET /api/blocks - Retornando ${blocks.length} blocos`)
+    res.json(blocks)
+  } catch (error) {
+    console.error('[API] GET /api/blocks - Erro:', error)
+    res.status(500).json({ error: 'Erro ao buscar blocos' })
+  }
 })
 
 // Admin endpoint: Get only blocks user can manage

@@ -18,8 +18,20 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [stateFilter, setStateFilter] = useState('all');
 
-  const { data: blocks = [], isLoading } = useQuery({ queryKey: ['blocks'], queryFn: () => blocksApi.list() })
-  const states = ['all', ...new Set(blocks.map((block: any) => block.estado))].sort();
+  const { data: blocks = [], isLoading, error } = useQuery({ 
+    queryKey: ['blocks'], 
+    queryFn: () => blocksApi.list(),
+    retry: 3,
+    staleTime: 1000 * 60 * 5 // 5 minutos
+  })
+  
+  // Log para debug
+  React.useEffect(() => {
+    console.log('Blocos carregados:', blocks.length);
+    if (error) console.error('Erro ao carregar blocos:', error);
+  }, [blocks, error])
+  
+  const states = ['all', ...new Set(blocks.map((block: any) => block.estado).filter(Boolean))].sort();
 
   const filteredBlocks = (blocks as any[]).filter((block) => {
     const matchesSearch = (block.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -130,21 +142,48 @@ const Index = () => {
               Nossos Blocos
             </h2>
             <p className="text-muted-foreground">
-              {filteredBlocks.length} bloco{filteredBlocks.length !== 1 ? 's' : ''} encontrado{filteredBlocks.length !== 1 ? 's' : ''}
+              {isLoading ? 'Carregando...' : `${filteredBlocks.length} bloco${filteredBlocks.length !== 1 ? 's' : ''} encontrado${filteredBlocks.length !== 1 ? 's' : ''}`}
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr items-stretch">
-            {filteredBlocks.map((block: any) => (
-              <BlockCard
-                key={block.id}
-                block={block}
-                onViewProfile={handleViewProfile}
-                onSelectOnMap={handleSelectOnMap}
-                isSelected={selectedBlockId === block.id}
-              />
-            ))}
-          </div>
+          {error && (
+            <Card className="mb-6 border-destructive bg-destructive/10">
+              <CardContent className="p-4">
+                <p className="text-destructive font-semibold">Erro ao carregar blocos</p>
+                <p className="text-sm text-muted-foreground mt-1">{String(error)}</p>
+              </CardContent>
+            </Card>
+          )}
+          
+          {isLoading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map(i => (
+                <Card key={i} className="h-96 animate-pulse bg-muted" />
+              ))}
+            </div>
+          )}
+          
+          {!isLoading && blocks.length === 0 && (
+            <Card className="text-center py-12">
+              <CardContent>
+                <p className="text-muted-foreground">Nenhum bloco encontrado</p>
+              </CardContent>
+            </Card>
+          )}
+          
+          {!isLoading && blocks.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr items-stretch">
+              {filteredBlocks.map((block: any) => (
+                <BlockCard
+                  key={block.id}
+                  block={block}
+                  onViewProfile={handleViewProfile}
+                  onSelectOnMap={handleSelectOnMap}
+                  isSelected={selectedBlockId === block.id}
+                />
+              ))}
+            </div>
+          )}
           
           {filteredBlocks.length === 0 && (
             <Card className="text-center py-12">

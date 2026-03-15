@@ -40,10 +40,18 @@ const FeministBlocksMap: React.FC<FeministBlocksMapProps> = ({
   const markersRef = useRef<{ [key: string]: L.Marker }>({});
 
   // Fetch blocks from API
-  const { data: blocks = [], isLoading } = useQuery({
+  const { data: blocks = [], isLoading, error } = useQuery({
     queryKey: ['blocks'],
-    queryFn: blocksApi.list
+    queryFn: blocksApi.list,
+    retry: 3,
+    staleTime: 1000 * 60 * 5 // 5 minutos
   });
+  
+  // Log para debug
+  React.useEffect(() => {
+    console.log('Mapa: Blocos carregados:', blocks.length);
+    if (error) console.error('Mapa: Erro ao carregar blocos:', error);
+  }, [blocks, error])
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -168,9 +176,13 @@ const FeministBlocksMap: React.FC<FeministBlocksMapProps> = ({
         <div ref={mapContainer} className="w-full h-full" />
         <div className="absolute top-12 md:top-4 left-3 md:left-4 bg-card/90 backdrop-blur-sm rounded-lg p-2 md:p-3 shadow-soft z-10 max-w-xs">
           <h3 className="font-semibold text-primary mb-1">Blocos Feministas</h3>
-          <p className="text-sm text-muted-foreground">
-            {isLoading ? 'Carregando...' : `${Object.keys(markersRef.current).length}/${blocks.length} blocos no mapa`}
-          </p>
+          {error ? (
+            <p className="text-sm text-destructive font-semibold">Erro ao carregar mapa</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {isLoading ? 'Carregando...' : `${Object.keys(markersRef.current).length}/${blocks.length} blocos no mapa`}
+            </p>
+          )}
         </div>
       </div>
     </div>
