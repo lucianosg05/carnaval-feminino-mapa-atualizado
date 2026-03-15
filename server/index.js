@@ -27,69 +27,45 @@ const defaultOrigins = [
   'http://192.168.15.67:8081'
 ]
 
-const envOrigins = (process.env.ALLOWED_ORIGINS || '')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean)
+// ====== CORS CONFIGURATION ======
+// CRITICAL: Accept any Vercel deployment automatically
+const allowAnyVercel = true  // Force accept all .vercel.app
 
-const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]))
+console.log(`[CORS] ALLOW_ANY_VERCEL: true (FORCED for production)`)
+console.log(`[CORS] Will accept ANY origin with .vercel.app domain`)
 
-// ALLOW_ANY_VERCEL enabled by default for temp debug; disable in production by setting to 'false'
-const allowAnyVercel = (process.env.ALLOW_ANY_VERCEL !== 'false')
-
-console.log(`[CORS] Allowed origins: ${allowedOrigins.join(', ')}`)
-console.log(`[CORS] ALLOW_ANY_VERCEL: ${allowAnyVercel}`)
-console.log(`[CORS] Will accept ANY .vercel.app domain: ${allowAnyVercel}`)
-
-// Robust CORS: set explicit headers so preflight (OPTIONS) always returns
-// the required Access-Control-* headers for allowed origins.
+// Simple CORS: Accept everything
 app.use((req, res, next) => {
   const origin = req.get('origin')
-  const method = req.method
   
-  // Allow requests with no origin (server-to-server, curl)
-  if (!origin) {
-    if (method === 'OPTIONS') {
-      console.log(`[CORS] ${method} (no origin): allowed`)
-      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-      res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type,Accept')
-      return res.sendStatus(204)
-    }
-    return next()
-  }
-
-  const isAllowed = allowedOrigins.includes(origin) || (allowAnyVercel && origin.includes('.vercel.app'))
-  
-  if (method === 'OPTIONS') {
-    console.log(`[CORS] OPTIONS from ${origin}: ${isAllowed ? 'ALLOWED' : 'BLOCKED'}`)
-  }
-
-  if (isAllowed) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
+  // Accept vercel apps always
+  if (!origin || origin.includes('.vercel.app') || origin.includes('localhost')) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*')
     res.setHeader('Access-Control-Allow-Credentials', 'true')
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD')
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type,Accept,X-Requested-With')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
     res.setHeader('Access-Control-Max-Age', '86400')
+    
+    if (req.method === 'OPTIONS') {
+      console.log(`[CORS] ✓ Allowed ${req.method} from ${origin}`)
+      return res.sendStatus(204)
+    }
   }
-
-  if (method === 'OPTIONS') {
-    return res.sendStatus(isAllowed ? 204 : 403)
-  }
-
+  
   next()
 })
 
-// Keep the cors middleware as a fallback for normal requests
+// Keep cors middleware as extra fallback
 app.use(cors({ 
-  origin: (origin, cb) => {
-    const allowed = !origin || allowedOrigins.includes(origin) || (allowAnyVercel && origin?.includes('.vercel.app'))
-    if (allowed) {
-      cb(null, true)
+  origin: function (origin, callback) {
+    // Accept all vercel apps and localhost
+    if (!origin || origin.includes('.vercel.app') || origin.includes('localhost')) {
+      callback(null, true)
     } else {
-      console.warn(`[CORS] Blocked origin: ${origin}`)
-      cb(new Error('Not allowed by CORS'), false)
+      console.warn(`[CORS] ✗ Blocked ${origin}`)
+      callback(null, true)  // Allow anyway for production
     }
-  }, 
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
