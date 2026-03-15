@@ -1,0 +1,3 @@
+Prisma Client regenerated on 2026-03-14
+Schema synchronized with Neon database
+Column issue (videoUrl) resolved in schema.prisma (uses 'videos' instead)
