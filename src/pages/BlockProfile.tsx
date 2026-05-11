@@ -1,3 +1,4 @@
+// Página de perfil de um bloco: exibe detalhes completos, eventos e informações de contato
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,22 +9,32 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ArrowLeft, MapPin, Users, Mail, Calendar, Music, Heart, Share2, AlertCircle, MessageCircle, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query' // Hook para carregar dados da API
 import { blocksApi } from '@/lib/api'
 import Header from '@/components/Navigation/Header';
 import { handleGenericAction } from '@/utils/toast';
 
+// Componente da página de perfil do bloco
 const BlockProfile: React.FC = () => {
+  // Extrai o ID do bloco da URL (ex: /bloco/123-abc)
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
+  // Estados para gerenciar diálogos modais e informações do usuário
   const [openDialog, setOpenDialog] = useState<'schedule' | 'report' | 'share' | null>(null);
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [scheduleForm, setScheduleForm] = useState({ date: '', location: '', details: '' });
-  const [reportForm, setReportForm] = useState({ type: 'bug', description: '' });
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFavorited, setIsFavorited] = useState(false); // Indica se bloco está nos favoritos do usuário
+  const [scheduleForm, setScheduleForm] = useState({ date: '', location: '', details: '' }); // Form para agendar encontro
+  const [reportForm, setReportForm] = useState({ type: 'bug', description: '' }); // Form para reportar problema
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Índice da imagem atual no carousel
   
-  const { data: block, isLoading } = useQuery({ queryKey: ['block', id], queryFn: () => blocksApi.get(id as string), enabled: !!id })
+  // Carrega dados do bloco específico da API
+  const { data: block, isLoading } = useQuery({ 
+    queryKey: ['block', id], 
+    queryFn: () => blocksApi.get(id as string), 
+    enabled: !!id // Só faz requisição quando ID está definido
+  })
+  
+  // Estado de carregamento
   if (isLoading) return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -31,6 +42,7 @@ const BlockProfile: React.FC = () => {
     </div>
   )
   
+  // Bloco não existe
   if (!block) {
     return (
       <div className="min-h-screen bg-background">
@@ -52,6 +64,7 @@ const BlockProfile: React.FC = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Botão de navegação: volta ao mapa */}
         <Button 
           variant="ghost" 
           onClick={() => navigate('/')}
@@ -61,10 +74,11 @@ const BlockProfile: React.FC = () => {
           Voltar ao mapa
         </Button>
         
+        {/* Grid com conteúdo principal (2/3) e sidebar (1/3) */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {/* Conteúdo principal: informações do bloco */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Hero Section */}
+            {/* Seção Hero: imagem principal com nome do bloco */}
             <Card className="overflow-hidden bg-gradient-card">
               <div className="relative h-64 md:h-80">
                 <img 
@@ -72,6 +86,7 @@ const BlockProfile: React.FC = () => {
                   alt={block.nome}
                   className="w-full h-full object-cover"
                 />
+                {/* Overlay escuro para melhor legibilidade do texto */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
                   <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">

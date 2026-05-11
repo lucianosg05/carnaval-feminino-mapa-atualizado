@@ -1,18 +1,31 @@
+// Configuração Tailwind CSS: define sistema de cores, tipografia e componentes
+// Tailwind CSS: framework de utilitários para estilizar componentes rapidamente
 import type { Config } from "tailwindcss";
 
 export default {
+  // Ativa modo escuro baseado em classe CSS (.dark)
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  // Define caminhos para varrer componentes: remove CSS não usado
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}"
+  ],
+  // Prefixo para classes Tailwind (vazio = sem prefixo)
   prefix: "",
   theme: {
+    // Configuração do container (classe .container)
     container: {
-      center: true,
-      padding: "2rem",
+      center: true, // Centra container automaticamente
+      padding: "2rem", // Padding padrão nos lados
       screens: {
-        "2xl": "1400px",
+        "2xl": "1400px", // Breakpoint para telas muito grandes
       },
     },
+    // Extend: adiciona novas cores e estilos além dos defaults
     extend: {
+      // Sistema de cores: referencia CSS variables do index.css
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -22,7 +35,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          glow: "hsl(var(--primary-glow))",
+          glow: "hsl(var(--primary-glow))", // Para efeitos brilhantes
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

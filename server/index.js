@@ -1,47 +1,35 @@
+// Servidor Express da API: gerencia autenticação, CRUD de blocos e eventos
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import multer from 'multer'
+import bcrypt from 'bcrypt' // Criptografia de senhas
+import jwt from 'jsonwebtoken' // Geração e verificação de tokens JWT
+import multer from 'multer' // Middleware para upload de arquivos
 import path from 'path'
-import prisma from './prismaClient.js'
+import prisma from './prismaClient.js' // Cliente do banco de dados Prisma
 import { uploadToCloudinary, isCloudinaryConfigured } from './cloudinaryHelper.js'
 
 dotenv.config()
 
 const app = express()
-// Configure CORS: default dev origins + any extra origins from env var `ALLOWED_ORIGINS`.
-// To allow the Vercel frontend, set `ALLOWED_ORIGINS` to a comma-separated list
-// (e.g. "https://meu-site.vercel.app,https://meu-outro.vercel.app").
-const defaultOrigins = [
-  'http://localhost:5173',
-  'http://localhost:8080',
-  'http://localhost:8081',
-  'http://26.236.240.201:8080',
-  'http://26.236.240.201:8081',
-  'http://26.236.240.201:8082',
-  'http://26.236.240.201:8083',
-  'http://192.168.15.67:8080',
-  'http://192.168.15.67:8081'
-]
 
-// ====== CORS CONFIGURATION ======
+// ====== CONFIGURAÇÃO DE CORS ======
+// CORS (Cross-Origin Resource Sharing): permite requisições de múltiplas origens
 console.log(`[CORS] Configuring CORS for all origins`)
 
-// Accept all origins (for development and production)
+// Aceita requisições de todas as origens (desenvolvimento e produção)
 app.use(cors({
-  origin: true,  // Accept all origins
-  credentials: true,
+  origin: true,  // Aceita todas as origens
+  credentials: true, // Permite cookies e headers de autenticação
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
 }))
 
-// Explicit preflight handling
+// Preflight: requisições OPTIONS necessárias para CORS
 app.options('*', cors())
 
-// Additional CORS headers middleware - MUST be before all routes
+// Headers customizados de CORS (deve estar antes de todas as rotas)
 app.use((req, res, next) => {
   const origin = req.get('origin')
   if (origin) {
@@ -54,14 +42,19 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
   res.setHeader('Access-Control-Max-Age', '86400')
   
+  // Responde imediatamente a requisições OPTIONS (preflight)
   if (req.method === 'OPTIONS') {
     return res.status(204).end()
   }
   next()
 })
+
+// Parsers de request body
 app.use(express.json())
 app.use(cookieParser())
 
+// ====== CONFIGURAÇÃO DE UPLOAD DE ARQUIVOS ======
+// Multer: middleware para lidar com multipart/form-data (uploads)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(process.cwd(), 'server', 'uploads'))
@@ -75,12 +68,15 @@ const upload = multer({
   storage
 })
 
+// ====== AUTENTICAÇÃO ======
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret'
 
+// Gera token JWT para autenticação
 function generateToken(user) {
   return jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' })
 }
 
+// Middleware de autenticação: verifica token JWT nas requisições
 async function authMiddleware(req, res, next) {
   const auth = req.headers.authorization
   if (!auth) return res.status(401).json({ error: 'Unauthorized - No auth header' })
@@ -110,12 +106,12 @@ async function authMiddleware(req, res, next) {
       }
     } catch (e2) {
       return res.status(401).json({ error: 'Invalid token - decode error' })
-      return res.status(401).json({ error: 'Invalid token - decode error' })
     }
   }
 }
 
-// Health check endpoint
+// ====== ENDPOINTS DE DIAGNÓSTICO ======
+// Health check: verifica se o servidor está funcionando
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok',
@@ -126,7 +122,7 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// CORS test endpoint
+// Teste de CORS: verifica se CORS está configurado corretamente
 app.get('/api/cors-test', (req, res) => {
   res.json({ 
     status: 'CORS works!',
@@ -135,7 +131,7 @@ app.get('/api/cors-test', (req, res) => {
   })
 })
 
-// Database test endpoint
+// Teste de banco de dados: verifica conexão com Neon/PostgreSQL
 app.get('/api/db-test', async (req, res) => {
   try {
     const count = await prisma.block.count()
@@ -154,13 +150,15 @@ app.get('/api/db-test', async (req, res) => {
   }
 })
 
-// Auth routes
+// ====== ROTAS DE AUTENTICAÇÃO ======
+// Registro: cria novo usuário com senha criptografada
 app.post('/api/auth/register', async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' })
   try {
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) return res.status(400).json({ error: 'Email already registered' })
+    // Criptografa a senha com bcrypt antes de armazenar
     const hash = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({ data: { email, password: hash } })
     const token = generateToken(user)
@@ -171,12 +169,14 @@ app.post('/api/auth/register', async (req, res) => {
   }
 })
 
+// Login: autentica usuário e retorna token JWT
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' })
   try {
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) return res.status(400).json({ error: 'Invalid credentials' })
+    // Compara senha enviada com hash armazenado
     const ok = await bcrypt.compare(password, user.password)
     if (!ok) return res.status(400).json({ error: 'Invalid credentials' })
     const token = generateToken(user)
@@ -187,12 +187,13 @@ app.post('/api/auth/login', async (req, res) => {
   }
 })
 
+// Logout: remover token no cliente (servidor é stateless)
 app.post('/api/auth/logout', (req, res) => {
-  // client should remove token
   res.json({ ok: true })
 })
 
-// Blocks CRUD
+// ====== ROTAS CRUD DE BLOCOS ======
+// GET /api/blocks - Lista todos os blocos públicos
 app.get('/api/blocks', async (req, res) => {
   try {
     const blocks = await prisma.block.findMany({ include: { eventos: true } })
@@ -201,7 +202,7 @@ app.get('/api/blocks', async (req, res) => {
   } catch (error) {
     console.error('[API] GET /api/blocks - Erro completo:', error.message)
     
-    // Check if it's a schema mismatch error
+    // Verifica se é erro de schema desatualizado
     if (error.code === 'P2022' && error.meta?.column === 'Block.videoUrl') {
       console.error('[API] ❌ SCHEMA MISMATCH: Database has outdated schema')
       console.error('[API] Please run: npx prisma migrate deploy')
@@ -216,10 +217,10 @@ app.get('/api/blocks', async (req, res) => {
   }
 })
 
-// Admin endpoint: Get only blocks user can manage
+// GET /api/blocks/admin/list - Lista blocos que o usuário autenticado pode gerenciar
 app.get('/api/blocks/admin/list', authMiddleware, async (req, res) => {
   try {
-    // Each user can only see and manage their own blocks
+    // Cada usuário vê apenas seus próprios blocos
     const blocks = await prisma.block.findMany({
       where: { ownerId: req.user.id }
     })
@@ -230,6 +231,7 @@ app.get('/api/blocks/admin/list', authMiddleware, async (req, res) => {
   }
 })
 
+// GET /api/blocks/:id - Obtém detalhes de um bloco específico
 app.get('/api/blocks/:id', async (req, res) => {
   const { id } = req.params
   const block = await prisma.block.findUnique({ where: { id }, include: { eventos: true } })
@@ -237,16 +239,17 @@ app.get('/api/blocks/:id', async (req, res) => {
   res.json(block)
 })
 
+// POST /api/blocks - Cria novo bloco com upload de fotos (requer autenticação)
 app.post('/api/blocks', authMiddleware, upload.any(), async (req, res) => {
   try {
     const data = req.body
     
-    
+    // Validações básicas
     if (!data.nome || data.nome.trim() === '') {
       return res.status(400).json({ error: 'Nome é obrigatório' })
     }
     
-    // Organize files by field name
+    // Organiza arquivos uploadados por fieldname
     const filesByField = {}
     if (req.files && Array.isArray(req.files)) {
       req.files.forEach((file) => {
@@ -256,13 +259,11 @@ app.post('/api/blocks', authMiddleware, upload.any(), async (req, res) => {
         filesByField[file.fieldname].push(file)
       })
     }
-    
-    
 
-    // Build base URL for served uploads
+    // URL base para arquivos locais
     const baseUrl = `${req.protocol}://${req.get('host')}`
 
-    // Handle main photo - use Cloudinary if configured, else fallback to local
+    // Processa foto principal: usa Cloudinary se configurado, senão usa upload local
     if (filesByField.foto && filesByField.foto[0]) {
       if (isCloudinaryConfigured()) {
         try {
@@ -278,26 +279,21 @@ app.post('/api/blocks', authMiddleware, upload.any(), async (req, res) => {
       }
     }
 
-    // handle local coordinates
+    // Parse coordenadas do bloco (latitude e longitude)
     const localLat = data.localLat ? parseFloat(data.localLat) : null
     const localLng = data.localLng ? parseFloat(data.localLng) : null
 
-    // Handle redesSociais - try to parse as JSON, fallback to string
+    // Parse redes sociais: tenta JSON, senão mantém como string
     let redes = data.redesSociais
     if (redes) {
       try {
         redes = JSON.parse(redes)
       } catch (e) {
-        // If it's not valid JSON, keep as string (social media handles like @user)
         console.log('redesSociais not valid JSON, keeping as string:', redes)
       }
     } else {
       redes = null
     }
-
-    // Prepare imagens/videos arrays from uploaded files
-    let imagensArr = []
-    let videosArr = []
     
     if (filesByField.imagens && isCloudinaryConfigured()) {
       // Upload multiple images to Cloudinary

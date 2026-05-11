@@ -1,3 +1,7 @@
+// Schemas do banco de dados: define estrutura de tabelas com Prisma ORM
+// Provider: PostgreSQL (Neon)
+// Prisma: ORM para mapear tabelas do banco em objetos TypeScript
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,46 +11,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Modelo: Usuário - armazena credenciais de autenticação
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id        String   @id @default(uuid()) // ID único (UUID v4)
+  email     String   @unique // Email único para login
+  password  String // Senha criptografada com bcrypt
+  createdAt DateTime @default(now()) // Data de criação
 }
 
+// Modelo: Bloco Carnavalesco - informações de um bloco feminista
 model Block {
-  id                String  @id @default(uuid())
-  nome              String
-  descricao         String?
-  contato           String?
-  foto              String?
-  localLat          Float?
-  localLng          Float?
-  cidade            String?
-  estado            String?
-  endereco          String?
-  vertenteFeminista String?
-  formacao          String?
-  atividades        String?
-  dias              String?
-  imagens           String?
-  redesSociais      String?
-  ownerId           String?
-  videos            String?
-  eventos           Event[] @relation("BlockEvents")
+  id                String  @id @default(uuid()) // ID único
+  nome              String // Nome do bloco (obrigatório)
+  descricao         String? // Descrição breve
+  contato           String? // Email ou telefone de contato
+  foto              String? // URL da foto principal
+  localLat          Float?  // Latitude do localização
+  localLng          Float?  // Longitude da localização
+  cidade            String? // Cidade onde o bloco atua
+  estado            String? // Estado (UF) - ex: SP, RJ, BA
+  endereco          String? // Endereço completo
+  vertenteFeminista String? // Vertente ou proposta feminista do bloco
+  formacao          String? // Informação sobre formação do bloco
+  atividades        String? // Atividades realizadas
+  dias              String? // Dias de atividade
+  imagens           String? // JSON array de URLs de imagens adicionais
+  redesSociais      String? // Redes sociais do bloco
+  ownerId           String? // ID do usuário proprietário do bloco
+  videos            String? // JSON array de URLs de vídeos
+  eventos           Event[] @relation("BlockEvents") // Relação: eventos associados
 }
 
+// Modelo: Evento - eventos/festas associados aos blocos
 model Event {
-  id        String   @id @default(uuid())
-  nome      String
-  data      DateTime
-  descricao String?
-  foto      String?
-  blocoId   String
-  local     String?
-  cidade    String?
-  estado    String?
-  tipo      String?
-  horario   String?
-  bloco     Block    @relation("BlockEvents", fields: [blocoId], references: [id])
+  id        String   @id @default(uuid()) // ID único
+  nome      String // Nome do evento
+  data      DateTime // Data/hora do evento
+  descricao String? // Descrição
+  foto      String? // Foto do evento
+  blocoId   String // ID do bloco ao qual pertence (chave estrangeira)
+  local     String? // Local do evento
+  cidade    String? // Cidade
+  estado    String? // Estado
+  tipo      String? // Tipo de evento (festa, oficina, etc)
+  horario   String? // Horário em formato texto
+  bloco     Block    @relation("BlockEvents", fields: [blocoId], references: [id]) // Relação com Bloco
 }

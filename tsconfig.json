@@ -1,16 +1,23 @@
+// Configuração do TypeScript: define regras de compilação e verificação de tipo
 {
+  // Referencia múltiplos tsconfig.json especializados
   "files": [],
-  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "references": [
+    { "path": "./tsconfig.app.json" }, // Config para código da aplicação
+    { "path": "./tsconfig.node.json" }  // Config para scripts build/server
+  ],
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": ".", // Base para resolução de caminhos
     "paths": {
+      // Alias @/* -> ./src/* (permite @/components em vez de paths relativos)
       "@/*": ["./src/*"]
     },
-    "noImplicitAny": false,
-    "noUnusedParameters": false,
-    "skipLibCheck": true,
-    "allowJs": true,
-    "noUnusedLocals": false,
-    "strictNullChecks": false
+    // Regras de type checking (relaxadas para desenvolvimento rápido)
+    "noImplicitAny": false, // Permite 'any' implícito
+    "noUnusedParameters": false, // Permite parâmetros não usados
+    "skipLibCheck": true, // Pula verificação de tipos em .d.ts
+    "allowJs": true, // Permite misturar .js e .ts
+    "noUnusedLocals": false, // Permite variáveis locais não usadas
+    "strictNullChecks": false // Permite null/undefined sem verificação
   }
 }

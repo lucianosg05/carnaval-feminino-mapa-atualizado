@@ -1,43 +1,47 @@
+// Helper Cloudinary: gerencia upload de imagens para CDN em nuvem
+// Cloudinary: serviço que armazena e otimiza imagens na nuvem
 import { v2 as cloudinary } from 'cloudinary'
 import { Readable } from 'stream'
 
-// Configura Cloudinary com env vars (CLOUDINARY_URL ou componentes separados)
+// Configura credenciais do Cloudinary a partir de variáveis de ambiente
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  // Alternativa: usar CLOUDINARY_URL diretamente se configurado
-  // secure: true
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, // Nome do account Cloudinary
+  api_key: process.env.CLOUDINARY_API_KEY, // Chave pública
+  api_secret: process.env.CLOUDINARY_API_SECRET, // Chave privada
 })
 
 /**
- * Faz upload de arquivo para Cloudinary e retorna a URL pública
- * @param {Buffer|Stream|string} source - arquivo em buffer, stream ou filepath
- * @param {string} folder - pasta no Cloudinary (ex: 'blocos/fotos')
- * @param {object} options - opções adicionais
- * @returns {Promise<string>} URL pública da imagem
+ * Faz upload de arquivo para Cloudinary e retorna URL pública otimizada
+ * Benefícios: armazenamento em nuvem, otimização automática de imagens,
+ * CDN global para distribuição rápida
+ * 
+ * @param {Buffer|Stream|string} source - arquivo em buffer, stream ou caminho local
+ * @param {string} folder - pasta no Cloudinary para organizar uploads
+ * @param {object} options - opções adicionais de upload
+ * @returns {Promise<string>} URL pública da imagem na nuvem
  */
 export async function uploadToCloudinary(source, folder = 'carnaval-blocos', options = {}) {
   try {
-    // Se for string (caminho local ou URL), use o uploader direto
+    // Se o source for uma string (caminho local ou URL remota)
     if (typeof source === 'string') {
       const result = await cloudinary.uploader.upload(source, {
-        folder: folder,
-        resource_type: 'auto',
-        quality: 'auto',
-        fetch_format: 'auto',
+        folder: folder, // Organiza uploads em pastas
+        resource_type: 'auto', // Detecta automaticamente o tipo (imagem, vídeo, etc)
+        quality: 'auto', // Otimiza qualidade automaticamente
+        fetch_format: 'auto', // Escolhe melhor formato (WebP, JPG, etc)
         ...options
       })
+      // Retorna URL segura (HTTPS)
       return result.secure_url
     }
 
-    // Se for Buffer, converte para Readable stream
+    // Se for Buffer (dados em memória), converte para stream
     let uploadSource = source
     if (Buffer.isBuffer(source)) {
       uploadSource = Readable.from(source)
     }
 
-    // Se for um stream legível, use upload_stream
+    // Se for stream legível, usa upload_stream
     if (uploadSource && typeof uploadSource.pipe === 'function') {
       const result = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream({

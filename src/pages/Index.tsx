@@ -1,3 +1,4 @@
+// Página principal: exibe mapa interativo e listagem de blocos carnavalescos feministas
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -5,34 +6,38 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, Filter, MapPin } from 'lucide-react';
 import Header from '@/components/Navigation/Header';
-import FeministBlocksMap from '@/components/Map/FeministBlocksMap';
+import FeministBlocksMap from '@/components/Map/FeministBlocksMap'; // Componente do mapa interativo
 import BlockCard from '@/components/Blocks/BlockCard';
 import { useQuery } from '@tanstack/react-query'
-import { blocksApi } from '@/lib/api'
+import { blocksApi } from '@/lib/api' // Service para requisições à API
 import { Block } from '@/data/blocks'
 import heroImage from '@/assets/hero-carnival.jpg';
 
 const Index = () => {
   const navigate = useNavigate();
+  // Estados para gerenciar filtros e seleção
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [stateFilter, setStateFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState(''); // Termo de busca por nome/cidade
+  const [stateFilter, setStateFilter] = useState('all'); // Filtro por estado (UF)
 
+  // Carrega lista de blocos da API com cache
   const { data: blocks = [], isLoading, error } = useQuery({ 
     queryKey: ['blocks'], 
     queryFn: () => blocksApi.list(),
     retry: 3,
-    staleTime: 1000 * 60 * 5 // 5 minutos
+    staleTime: 1000 * 60 * 5 // Cache de 5 minutos
   })
   
-  // Log para debug
+  // Log para debug da aplicação
   React.useEffect(() => {
     console.log('Blocos carregados:', blocks.length);
     if (error) console.error('Erro ao carregar blocos:', error);
   }, [blocks, error])
   
+  // Extrai lista de estados únicos do array de blocos e ordena alfabeticamente
   const states = ['all', ...new Set(blocks.map((block: any) => block.estado).filter(Boolean))].sort();
 
+  // Filtra blocos baseado no termo de busca e estado selecionado
   const filteredBlocks = (blocks as any[]).filter((block) => {
     const matchesSearch = (block.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (block.cidade || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -41,17 +46,19 @@ const Index = () => {
     return matchesSearch && matchesState;
   });
 
+  // Callback: armazena bloco selecionado para destaque no mapa
   const handleBlockSelect = (block: Block) => {
     setSelectedBlockId(block.id);
   };
 
+  // Callback: navega para página de perfil do bloco
   const handleViewProfile = (blockId: string) => {
     navigate(`/bloco/${blockId}`);
   };
 
+  // Callback: seleciona bloco no mapa e faz scroll até a seção do mapa
   const handleSelectOnMap = (blockId: string) => {
     setSelectedBlockId(blockId);
-    // Scroll to map section
     document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -59,14 +66,17 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section */}
+      {/* Seção Hero: banner principal com CTA (Call To Action) */}
       <section className="relative h-[45vh] md:h-[60vh] flex items-center justify-center overflow-hidden">
+        {/* Imagem de fundo */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${heroImage})` }}
         />
+        {/* Overlay escuro para melhor legibilidade do texto */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70" />
         
+        {/* Conteúdo do hero: título, descrição e botão CTA */}
         <div className="relative z-10 text-center text-white px-4 max-w-4xl">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-float">
             Blocos Carnavalescos
@@ -77,6 +87,7 @@ const Index = () => {
           <p className="text-xl md:text-2xl mb-8 text-white/90">
             Mapeando, conectando e fortalecendo a resistência cultural feminista pelo Brasil
           </p>
+          {/* Botão para navegar até seção do mapa */}
           <div className="flex justify-center">
             <Button 
               variant="hero" 
@@ -92,10 +103,11 @@ const Index = () => {
       </section>
 
       <div className="container mx-auto px-4 py-12">
-        {/* Search and Filters */}
+        {/* Card com barra de busca e filtro por estado */}
         <Card className="mb-8 bg-gradient-card">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col md:flex-row gap-4">
+              {/* Campo de busca por nome, cidade ou vertente feminista */}
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
@@ -105,6 +117,7 @@ const Index = () => {
                   className="pl-10"
                 />
               </div>
+              {/* Dropdown para filtrar por estado */}
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-muted-foreground" />
                 <select
@@ -122,11 +135,12 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Map Section */}
+        {/* Seção do mapa interativo com blocos */}
         <section id="map-section" className="mb-12 pt-16 md:pt-0">
           <h2 className="text-3xl font-bold gradient-text mb-6 text-center">
             Mapa dos Blocos Feministas
           </h2>
+          {/* Componente do mapa que recebe filtros e callbacks */}
           <FeministBlocksMap 
             onBlockSelect={handleBlockSelect}
             selectedBlockId={selectedBlockId}
@@ -135,17 +149,19 @@ const Index = () => {
           />
         </section>
 
-        {/* Blocks Grid */}
+        {/* Grade de cards com blocos filtrados */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold gradient-text">
               Nossos Blocos
             </h2>
+            {/* Contador de blocos encontrados */}
             <p className="text-muted-foreground">
               {isLoading ? 'Carregando...' : `${filteredBlocks.length} bloco${filteredBlocks.length !== 1 ? 's' : ''} encontrado${filteredBlocks.length !== 1 ? 's' : ''}`}
             </p>
           </div>
           
+          {/* Mensagem de erro se houver */}
           {error && (
             <Card className="mb-6 border-destructive bg-destructive/10">
               <CardContent className="p-4">

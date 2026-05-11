@@ -14,6 +14,7 @@ const blocos = [
     redesSociais: JSON.stringify({ instagram: "@gres_kifogo" }),
     foto: "",
     imagens: JSON.stringify([]),
+    videos: JSON.stringify([]),
     localLat: -23.7939,
     localLng: -45.4158
   },

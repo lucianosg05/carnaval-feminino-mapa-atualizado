@@ -1,7 +1,9 @@
+// Configuração do Firebase: autenticação, armazenamento em nuvem e realtime database
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getStorage } from 'firebase/storage';
+import { getAuth } from 'firebase/auth'; // Autenticação (email/password, OAuth, etc)
+import { getStorage } from 'firebase/storage'; // Armazenamento de arquivos em nuvem
 
+// Credenciais do Firebase: conecta a aplicação ao projeto Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAOkohIBrCrmWlgMB3qAGaiSHKUgGdfEfU",
   authDomain: "sistema-de-blocos-carnaval.firebaseapp.com",
@@ -12,13 +14,13 @@ const firebaseConfig = {
   measurementId: "G-VVQSQQBL93"
 };
 
-// Initialize Firebase
+// Inicializa Firebase com as credenciais
 const app = initializeApp(firebaseConfig);
 
-// Initialize Auth
+// Serviço de autenticação: gerencia login, registro, logout
 export const auth = getAuth(app);
 
-// Initialize Storage
+// Serviço de armazenamento: guarda arquivos na nuvem (fotos, vídeos, etc)
 export const storage = getStorage(app);
 
 export default app;

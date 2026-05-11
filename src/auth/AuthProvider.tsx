@@ -1,3 +1,4 @@
+// Contexto e provider de autenticação com Firebase
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { 
   createUserWithEmailAndPassword, 
@@ -9,8 +10,10 @@ import {
 import { auth as firebaseAuth } from '@/lib/firebase'
 import { setToken, getToken } from '@/lib/api'
 
+// Tipo para o usuário autenticado
 type User = { id: string; email: string } | null
 
+// Criação do contexto de autenticação
 const AuthContext = createContext<{
   user: User
   login: (email: string, password: string) => Promise<void>
@@ -25,18 +28,21 @@ const AuthContext = createContext<{
   loading: true
 })
 
+// Provider de autenticação que envolve a aplicação
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true) // Indica se a verificação de autenticação está em andamento
 
+  // Hook que verifica o estado de autenticação ao carregar a aplicação
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // Obter token do Firebase
+        // Usuário autenticado: obter token do Firebase e armazenar
         const token = await firebaseUser.getIdToken()
         setToken(token)
         setUser({ id: firebaseUser.uid, email: firebaseUser.email || '' })
       } else {
+        // Usuário desautenticado: limpar token e dados
         setToken(null)
         setUser(null)
       }
@@ -46,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe()
   }, [])
 
+  // Função para registrar novo usuário
   const register = async (email: string, password: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password)
@@ -60,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  // Função para fazer login
   const login = async (email: string, password: string) => {
     try {
       const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password)
@@ -74,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  // Função para fazer logout
   const logout = async () => {
     try {
       await signOut(firebaseAuth)
@@ -91,4 +100,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   )
 }
 
+// Hook para acessar contexto de autenticação em qualquer componente
 export const useAuth = () => useContext(AuthContext)
